@@ -1,0 +1,6 @@
+{
+  "name": "Vlaksha Crafts",
+  "description": "A premium, visually rich e-commerce website for Vlaksha Crafts, specializing in traditional Indian lippan (mud-mirror) art and hand-painted mandala work.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

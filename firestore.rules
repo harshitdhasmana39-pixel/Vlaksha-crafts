@@ -1,0 +1,119 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- GLOBAL REUSABLE HELPER FUNCTIONS ---
+
+    // Identity & Authentication
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Checks if the user is the bootstrapped administrator
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'harshitdhasmana39@gmail.com' ||
+        request.auth.uid == 'admin-harshit'
+      );
+    }
+
+    // Input Validation primitives
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Path Variable & Denial of Wallet String length validation
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_-]+$');
+    }
+
+    // Entity Schema Validation - User
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'phone', 'address'])
+        && data.keys().size() <= 6
+        && data.id is string && data.id.size() <= 128
+        && data.name is string && data.name.size() <= 128
+        && data.email is string && data.email.size() <= 128
+        && data.phone is string && data.phone.size() <= 32
+        && data.address is map
+        && data.address.keys().hasAll(['street', 'city', 'state', 'zipCode', 'country'])
+        && data.address.street is string && data.address.street.size() <= 256
+        && data.address.city is string && data.address.city.size() <= 128
+        && data.address.state is string && data.address.state.size() <= 128
+        && data.address.zipCode is string && data.address.zipCode.size() <= 32
+        && data.address.country is string && data.address.country.size() <= 128
+        && (!('password' in data) || data.password is string && data.password.size() <= 128);
+    }
+
+    // Entity Schema Validation - Order
+    function isValidOrder(data) {
+      return data.keys().hasAll(['id', 'items', 'customerName', 'email', 'phone', 'address', 'paymentMethod', 'paymentStatus', 'orderStatus', 'totalAmount', 'createdAt'])
+        && data.keys().size() <= 14
+        && data.id is string && data.id.size() <= 128
+        && data.items is list && data.items.size() <= 100
+        && data.customerName is string && data.customerName.size() <= 128
+        && data.email is string && data.email.size() <= 128
+        && data.phone is string && data.phone.size() <= 32
+        && data.address is map
+        && data.address.keys().hasAll(['street', 'city', 'state', 'zipCode', 'country'])
+        && data.address.street is string && data.address.street.size() <= 256
+        && data.address.city is string && data.address.city.size() <= 128
+        && data.address.state is string && data.address.state.size() <= 128
+        && data.address.zipCode is string && data.address.zipCode.size() <= 32
+        && data.address.country is string && data.address.country.size() <= 128
+        && data.paymentMethod is string && data.paymentMethod.size() <= 32
+        && data.paymentStatus is string && data.paymentStatus in ['pending', 'completed', 'failed']
+        && data.orderStatus is string && data.orderStatus in ['received', 'in_progress', 'shipped', 'delivered']
+        && (data.totalAmount is number || data.totalAmount is int)
+        && data.createdAt is string && data.createdAt.size() <= 64
+        && (!('customNotes' in data) || data.customNotes is string && data.customNotes.size() <= 1000)
+        && (!('whatsappLink' in data) || data.whatsappLink is string && data.whatsappLink.size() <= 2048)
+        && (!('trackingNotes' in data) || data.trackingNotes is string && data.trackingNotes.size() <= 1000);
+    }
+
+    // --- SECURED COLLECTIONS ---
+
+    // Users Collection
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isAdmin() || !isSignedIn() || userId == request.auth.uid);
+      
+      allow list: if isAdmin() || !isSignedIn() || (isSignedIn() && (resource.data.id == request.auth.uid || resource.data.email == request.auth.token.email));
+
+      allow create: if isValidId(userId) && isValidUser(incoming());
+
+      allow update: if isValidId(userId) && isValidUser(incoming()) && (
+        isAdmin() || !isSignedIn() || userId == request.auth.uid
+      );
+
+      allow delete: if isValidId(userId) && false;
+    }
+
+    // Orders Collection
+    match /orders/{orderId} {
+      allow get: if isValidId(orderId) && (isAdmin() || !isSignedIn() || resource.data.email == request.auth.token.email);
+
+      allow list: if isAdmin() || !isSignedIn() || (isSignedIn() && resource.data.email == request.auth.token.email);
+
+      allow create: if isValidId(orderId) && isValidOrder(incoming());
+
+      allow update: if isValidId(orderId) && isValidOrder(incoming());
+
+      allow delete: if isValidId(orderId) && false;
+    }
+
+    // Connection verification path
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    // Settings Collection
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+  }
+}

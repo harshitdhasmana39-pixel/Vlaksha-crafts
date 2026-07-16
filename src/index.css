@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --theme-primary: #c5a059;
+  --theme-accent: #1a2a4e;
+  --theme-bg: #FCFBF7;
+  --theme-bg-alt: #F4F1EA;
+  --theme-announcement-bg: #1a2a4e;
+  --theme-announcement-text: #ffffff;
+}
+
+body {
+  background-color: var(--theme-bg);
+  color: #1a1a1a;
+}
+
+/* Custom micro-animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 35s linear infinite;
+}
+
