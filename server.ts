@@ -45,7 +45,13 @@ const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   // Support up to 10MB JSON payloads
-  app.use(express.json({ limit: "10mb" }));
+  // Only parse if Vercel hasn't already parsed it to prevent stream hanging
+  app.use((req, res, next) => {
+    if (req.body && typeof req.body === 'object') {
+      return next();
+    }
+    express.json({ limit: "10mb" })(req, res, next);
+  });
 
   // Initialize Gemini safely
   let ai: GoogleGenAI | null = null;
@@ -482,7 +488,7 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
     }
   });
 
-  app.use(express.json({ limit: '10mb' }));
+
 
   // Upload Image to Cloudinary
   app.post("/api/upload", async (req, res) => {
