@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "Order": {
+      "title": "Order",
+      "description": "Represents a customer's custom commission order placement.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": {
+          "type": "object"
+        },
+        "items": {
+          "type": "array"
+        },
+        "paymentMethod": { "type": "string" },
+        "paymentStatus": { "type": "string" },
+        "orderStatus": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "customNotes": { "type": "string" },
+        "whatsappLink": { "type": "string" },
+        "trackingNotes": { "type": "string" }
+      },
+      "required": ["id", "customerName", "email", "phone", "address", "items", "paymentMethod", "paymentStatus", "orderStatus", "totalAmount", "createdAt"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Represents a registered user/client profile.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": {
+          "type": "object"
+        },
+        "password": { "type": "string" }
+      },
+      "required": ["id", "name", "email", "phone", "address"]
+    }
+  },
+  "firestore": {
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Collection of all placed orders."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of all registered users."
+    }
+  }
+}

@@ -1,0 +1,18 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Checks if the user is the bootstrapped administrator
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.email == 'harshitdhasmana39@gmail.com' ||
+        request.auth.uid == 'admin-harshit'
+      );
+    }
+
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Marcellus&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-display: "Marcellus", "Cormorant Garamond", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --theme-primary: #C9A24B;     /* Artisan Warm Brass Gold */
+  --theme-accent: #22304F;      /* Gallery Deep Indigo */
+  --theme-terracotta: #C4703B;  /* Mud & Clay Terracotta Accent */
+  --theme-saffron: #D97706;     /* Sacred Saffron */
+  --theme-indigo: #22304F;      /* Rich Gallery Indigo */
+  --theme-emerald: #047857;     /* Peacock Emerald */
+  --theme-crimson: #991B1B;     /* Sacred Crimson */
+  --theme-gold: #C9A24B;        /* Warm Brass Gold */
+  --theme-bg: #FAF7F2;          /* Hand-cut Linen Cream Background */
+  --theme-bg-alt: #F2EBDC;      /* Soft Terracotta Sand Alt */
+  --theme-announcement-bg: #1B2438; /* Muted Navy Utility Bar */
+  --theme-announcement-text: #EAD8B1;
+}
+
+body {
+  background-color: var(--theme-bg);
+  color: #1c1917;
+  font-family: var(--font-sans);
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(196, 112, 59, 0.035) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(34, 48, 79, 0.035) 0%, transparent 45%);
+  background-attachment: fixed;
+}
+
+/* Custom 3D perspective and realism effects */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Micro-animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 24s linear infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(1deg);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-100%) rotate(25deg);
+  }
+  100% {
+    transform: translateX(200%) rotate(25deg);
+  }
+}
+
+.animate-shimmer-sweep {
+  animation: shimmer-sweep 2.5s infinite;
+}
+
+/* Gallery & Glassmorphism Panels */
+.glass-panel {
+  background: rgba(250, 247, 242, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(201, 162, 75, 0.15);
+}
+
+.glass-panel-dark {
+  background: rgba(34, 48, 79, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(201, 162, 75, 0.25);
+}
+
+/* Soft Tactile Drop Shadows */
+.shadow-craft-3d {
+  box-shadow: 
+    0 12px 30px -8px rgba(34, 48, 79, 0.08),
+    0 6px 12px -4px rgba(196, 112, 59, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.shadow-craft-hover {
+  box-shadow: 
+    0 24px 48px -12px rgba(34, 48, 79, 0.16),
+    0 12px 24px -8px rgba(196, 112, 59, 0.12);
+}
+
+.shadow-soft-gallery {
+  box-shadow: 0 10px 40px -10px rgba(34, 48, 79, 0.07);
+}
