@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import multer from "multer";
+import { uploadImage, deleteImage } from "./src/server/cloudinary.js";
 
 dotenv.config();
 
@@ -448,6 +450,60 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
       console.error("Razorpay verification error:", error);
       res.status(500).json({ error: error.message || "Failed to verify signature" });
     }
+  });
+
+  // Cloudinary Multer Setup
+  const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 4.5 * 1024 * 1024 } // 4.5MB limit (Vercel serverless limit)
+  });
+
+  // Upload Image to Cloudinary
+  app.post("/api/upload", upload.single("image"), async (req, res) => {
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: "No image file provided" });
+        return;
+      }
+      const folder = req.body.folder || "misc";
+      const publicId = req.body.publicId;
+
+      const result = await uploadImage(req.file.buffer, folder, publicId);
+      res.json({
+        secure_url: result.secure_url,
+        public_id: result.public_id,
+        width: result.width,
+        height: result.height,
+        format: result.format,
+        bytes: result.bytes,
+      });
+    } catch (error: any) {
+      console.error("Cloudinary upload failed:", error);
+      res.status(500).json({ error: error.message || "Failed to upload image to Cloudinary" });
+    }
+  });
+
+  // Delete Image from Cloudinary
+  app.delete("/api/delete-image", async (req, res) => {
+    try {
+      const { public_id } = req.body;
+      if (!public_id) {
+        res.status(400).json({ error: "Missing public_id" });
+        return;
+      }
+      const result = await deleteImage(public_id);
+      res.json({ success: true, result });
+    } catch (error: any) {
+      console.error("Cloudinary delete failed:", error);
+      res.status(500).json({ error: error.message || "Failed to delete image" });
+    }
+  });
+
+  // Migration Endpoint (Stub for triggering manual migration later)
+  app.post("/api/migrate-cloudinary", async (req, res) => {
+    // This will be called from the frontend or a script to loop over Firestore documents
+    // and upload their embedded base64 strings to Cloudinary.
+    res.json({ message: "Migration endpoint ready. Please implement the Firestore loop client-side or here." });
   });
 
   // Vite middleware setup for Development

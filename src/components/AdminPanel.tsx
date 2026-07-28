@@ -6,7 +6,7 @@ import { compressImage, compressBase64Image } from '../utils/imageUtils';
 import CraftImage from './CraftImage';
 import { ShieldCheck, Plus, Edit2, Trash2, Calendar, FileText, CheckCircle2, IndianRupee, Loader2, KeyRound, AlertTriangle, MessageSquare, ExternalLink, RefreshCw, BarChart3, Package, ShoppingCart, X, Truck, Sparkles, Download, Search, Percent, Tag, Gift, DollarSign, Palette, Image as ImageIcon } from 'lucide-react';
 import MandalaDivider from './MandalaDivider';
-import { getAllOrdersFromFirestore, saveOrderToFirestore, saveUserToFirestore } from '../services/firebase';
+import { getAllOrdersFromFirestore, saveOrderToFirestore, saveUserToFirestore, saveProductToFirestore } from '../services/firebase';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, Legend, PieChart, Pie } from 'recharts';
 
 interface AdminPanelProps {
@@ -110,9 +110,11 @@ export default function AdminPanel({ onProductUpdated, onSettingsUpdated }: Admi
     try {
       const localOrders = dbService.getOrders();
       const localUsers = dbService.getUsers();
+      const localProducts = await dbService.getProducts();
       
       let ordersSynced = 0;
       let usersSynced = 0;
+      let productsSynced = 0;
 
       for (const order of localOrders) {
         await saveOrderToFirestore(order);
@@ -124,7 +126,12 @@ export default function AdminPanel({ onProductUpdated, onSettingsUpdated }: Admi
         usersSynced++;
       }
 
-      setSyncSuccessMessage(`Successfully synchronized ${usersSynced} users and ${ordersSynced} orders directly into your live Firebase Project "vlaksha-crafts-27a0d"!`);
+      for (const product of localProducts) {
+        await saveProductToFirestore(product);
+        productsSynced++;
+      }
+
+      setSyncSuccessMessage(`Successfully synchronized ${usersSynced} users, ${ordersSynced} orders, and ${productsSynced} products directly into your live Firebase Project "vlaksha-crafts-27a0d"!`);
       loadAdminData();
     } catch (err: any) {
       console.error("Failed to sync data to Firestore:", err);
@@ -179,6 +186,86 @@ export default function AdminPanel({ onProductUpdated, onSettingsUpdated }: Admi
       alert("Error optimizing storage: " + err.message);
     } finally {
       setIsCompressingStorage(false);
+    }
+  };
+
+  const [isMigratingCloudinary, setIsMigratingCloudinary] = useState<boolean>(false);
+  const handleMigrateToCloudinary = async () => {
+    const confirmMigrate = window.confirm("Are you sure you want to migrate all historical images to Cloudinary? This may take a few minutes.");
+    if (!confirmMigrate) return;
+    
+    setIsMigratingCloudinary(true);
+    try {
+      const { uploadBase64ToStorage } = await import('../utils/imageUtils');
+      let migratedCount = 0;
+
+      // 1. Migrate Products
+      const currentProducts = await dbService.getProducts();
+      for (const p of currentProducts) {
+        let changed = false;
+        if (p.images) {
+          for (let i = 0; i < p.images.length; i++) {
+            if (p.images[i].startsWith('data:image/')) {
+              p.images[i] = await uploadBase64ToStorage(p.images[i], `products/${p.id}/`);
+              changed = true;
+            }
+          }
+        }
+        if (p.colors) {
+          for (const c of p.colors) {
+            if (c.image && c.image.startsWith('data:image/')) {
+              c.image = await uploadBase64ToStorage(c.image, `products/${p.id}/`);
+              changed = true;
+            }
+          }
+        }
+        if (changed) {
+          await dbService.saveProduct(p);
+          migratedCount++;
+        }
+      }
+
+      // 2. Migrate Settings
+      const currentSettings = dbService.getSettings();
+      let settingsChanged = false;
+      if (currentSettings.founderImageUrl && currentSettings.founderImageUrl.startsWith('data:image/')) {
+        currentSettings.founderImageUrl = await uploadBase64ToStorage(currentSettings.founderImageUrl, 'settings/');
+        settingsChanged = true;
+      }
+      if (currentSettings.heroImageUrl && currentSettings.heroImageUrl.startsWith('data:image/')) {
+        currentSettings.heroImageUrl = await uploadBase64ToStorage(currentSettings.heroImageUrl, 'settings/');
+        settingsChanged = true;
+      }
+      if (currentSettings.studioTourThumbnailUrl && currentSettings.studioTourThumbnailUrl.startsWith('data:image/')) {
+        currentSettings.studioTourThumbnailUrl = await uploadBase64ToStorage(currentSettings.studioTourThumbnailUrl, 'settings/');
+        settingsChanged = true;
+      }
+      if (currentSettings.categories) {
+        for (const cat of currentSettings.categories) {
+          if (cat.imageUrl && cat.imageUrl.startsWith('data:image/')) {
+            cat.imageUrl = await uploadBase64ToStorage(cat.imageUrl, 'settings/');
+            settingsChanged = true;
+          }
+        }
+      }
+      
+      if (settingsChanged) {
+        dbService.saveSettings(currentSettings);
+        setSettings(currentSettings);
+        migratedCount++;
+      }
+
+      if (migratedCount > 0) {
+        setSyncSuccessMessage(`Migration complete! Successfully migrated ${migratedCount} records to Cloudinary.`);
+        setTimeout(() => setSyncSuccessMessage(''), 5000);
+      } else {
+        alert("No historical Base64 images found. Everything is already migrated.");
+      }
+    } catch (err: any) {
+      console.error("Cloudinary Migration failed:", err);
+      alert("Error during Cloudinary migration: " + err.message);
+    } finally {
+      setIsMigratingCloudinary(false);
     }
   };
 
@@ -2241,6 +2328,23 @@ export default function AdminPanel({ onProductUpdated, onSettingsUpdated }: Admi
               <span>{settingsSuccessMessage}</span>
             </div>
           )}
+
+          <div className="bg-indigo-50 border border-indigo-200 p-4 rounded-none flex items-center justify-between shadow-xs">
+            <div>
+              <h4 className="text-sm font-sans font-semibold text-indigo-900">Cloudinary Migration</h4>
+              <p className="text-xs text-indigo-700 mt-1 max-w-lg">
+                Move all existing images (Base64) to your new Cloudinary storage for better performance.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleMigrateToCloudinary}
+              disabled={isMigratingCloudinary}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-sans text-xs uppercase tracking-wider font-semibold transition-colors disabled:opacity-50"
+            >
+              {isMigratingCloudinary ? 'Migrating...' : 'Start Migration'}
+            </button>
+          </div>
 
           <form onSubmit={handleSaveSettings} className="space-y-6 bg-white border border-[var(--theme-primary)]/15 p-6 shadow-xs">
             <div className="space-y-4">

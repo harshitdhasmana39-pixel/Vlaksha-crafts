@@ -1,6 +1,6 @@
 import { Product, Order, Review, CartItem, AdminAnalytics, User, StudioSettings } from '../types';
 import { INITIAL_PRODUCTS } from '../data/initialProducts';
-import { saveOrderToFirestore, updateOrderInFirestore, getOrdersFromFirestore, getUserByEmailFromFirestore, saveUserToFirestore, auth, GoogleAuthProvider, signInWithPopup, getSettingsFromFirestore, saveSettingsToFirestore } from './firebase';
+import { saveOrderToFirestore, updateOrderInFirestore, getOrdersFromFirestore, getUserByEmailFromFirestore, saveUserToFirestore, auth, GoogleAuthProvider, signInWithPopup, getSettingsFromFirestore, saveSettingsToFirestore, saveProductToFirestore, deleteProductFromFirestore, getAllProductsFromFirestore } from './firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut } from 'firebase/auth';
 
 const PRODUCTS_KEY = 'vlaksha_products';
@@ -290,8 +290,24 @@ export const dbService = {
   // PRODUCTS api
   async getProducts(): Promise<Product[]> {
     let data: string | null = null;
+    let products: Product[] = [];
     
-    // First try to load from IndexedDB
+    // First, try to fetch from Firestore for real-time cross-device sync
+    try {
+      const firestoreProducts = await getAllProductsFromFirestore();
+      if (firestoreProducts && firestoreProducts.length > 0) {
+        products = firestoreProducts;
+        // Update local cache
+        const jsonString = JSON.stringify(products);
+        await setIDB(PRODUCTS_KEY, jsonString).catch(() => {});
+        try { localStorage.setItem(PRODUCTS_KEY, jsonString); } catch(e) {}
+        return products;
+      }
+    } catch (e) {
+      console.warn("Failed to fetch products from Firestore, falling back to local DB", e);
+    }
+
+    // Fallback: try to load from IndexedDB
     try {
       const idbData = await getIDB(PRODUCTS_KEY);
       if (idbData) {
@@ -301,23 +317,17 @@ export const dbService = {
       console.warn("Failed to read from IndexedDB, falling back to localStorage", e);
     }
     
-    // If not in IndexedDB, fallback to localStorage (migration)
+    // Fallback: localStorage
     if (!data) {
       data = localStorage.getItem(PRODUCTS_KEY);
-      // Automatically migrate to IndexedDB if it exists in localStorage
       if (data) {
-        try {
-          await setIDB(PRODUCTS_KEY, data);
-        } catch(e) {
-          console.warn("Failed to migrate localStorage data to IndexedDB", e);
-        }
+        try { await setIDB(PRODUCTS_KEY, data); } catch(e) {}
       }
     }
 
     if (!data) return INITIAL_PRODUCTS;
     try {
       const stored: Product[] = JSON.parse(data);
-      // Sync latest colors from INITIAL_PRODUCTS for initial items if present (only if missing)
       return stored.map(p => {
         const initP = INITIAL_PRODUCTS.find(i => i.id === p.id);
         if (initP && initP.colors && !p.colors) {
@@ -373,6 +383,9 @@ export const dbService = {
       } catch(e) {
         console.warn("Product saved to IndexedDB, but localStorage quota exceeded (ignoring safely).");
       }
+      
+      // Save to Firestore
+      await saveProductToFirestore(product);
     } catch (e: any) {
       console.error("Failed to save product to IndexedDB", e);
       throw new Error('Database storage failed! Cannot save product.');
@@ -381,8 +394,23 @@ export const dbService = {
 
   async deleteProduct(id: string): Promise<void> {
     const products = await this.getProducts();
+    const productToDelete = products.find(p => p.id === id);
     const filtered = products.filter(p => p.id !== id);
     const jsonString = JSON.stringify(filtered);
+    
+    // Delete associated images from Cloudinary
+    if (productToDelete && productToDelete.images) {
+      try {
+        const { deleteImageFromCloudinary } = await import('../utils/imageUtils');
+        for (const imgUrl of productToDelete.images) {
+          if (imgUrl.includes("res.cloudinary.com")) {
+            await deleteImageFromCloudinary(imgUrl);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to delete Cloudinary images for product", err);
+      }
+    }
     
     await setIDB(PRODUCTS_KEY, jsonString);
     try {
@@ -390,6 +418,9 @@ export const dbService = {
     } catch(e) {
       // ignore
     }
+    
+    // Delete from Firestore
+    await deleteProductFromFirestore(id);
   },
 
   // ORDERS api

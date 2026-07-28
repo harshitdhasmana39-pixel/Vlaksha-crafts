@@ -195,12 +195,80 @@ export function validateImageSize(file: File, maxSizeMB = 5): { valid: boolean; 
  */
 export async function uploadBase64ToStorage(base64Str: string, path: string): Promise<string> {
   if (!base64Str.startsWith('data:image/')) {
-    return base64Str;
+    return base64Str; // Already a URL
   }
   
-  // BYPASS FIREBASE STORAGE to avoid requiring a Credit Card / Blaze Plan upgrade.
-  // Instead, we compress the image so it's very small and save the base64 string directly 
-  // into the completely free Firestore Database (which has a 1MB limit per document).
-  console.log(`Bypassing Firebase Storage for ${path}. Returning compressed Base64 string directly.`);
-  return await compressBase64Image(base64Str, 800, 0.7, 500000);
+  try {
+    // 1. Convert Base64 to Blob
+    const response = await fetch(base64Str);
+    const blob = await response.blob();
+
+    // 2. Enforce 4.5 MB Limit (Vercel serverless limit)
+    const MAX_SIZE = 4.5 * 1024 * 1024;
+    if (blob.size > MAX_SIZE) {
+      throw new Error(`Image is too large (${(blob.size / 1024 / 1024).toFixed(1)}MB). Maximum allowed size is 4.5MB.`);
+    }
+
+    // 3. Prepare FormData
+    const formData = new FormData();
+    // Default filename based on extension or path
+    const extension = blob.type.split('/')[1] || 'jpeg';
+    formData.append("image", blob, `upload_${Date.now()}.${extension}`);
+    formData.append("folder", path.replace(/\/$/, "")); // Remove trailing slash
+
+    // 4. Send to Backend Cloudinary Service
+    console.log(`Uploading to Cloudinary via backend... folder: ${path}`);
+    const apiRes = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!apiRes.ok) {
+      const errorData = await apiRes.json();
+      throw new Error(errorData.error || "Failed to upload image to Cloudinary");
+    }
+
+    const data = await apiRes.json();
+    console.log("Cloudinary Upload Success:", data);
+    
+    // 5. Return the Secure URL
+    return data.secure_url;
+  } catch (error: any) {
+    console.error(`Cloudinary Upload Failed [${path}]:`, error);
+    throw error; // Rethrow to let the UI catch and display the error
+  }
+}
+
+/**
+ * Attempts to extract a Cloudinary public_id from a secure_url and delete it via backend.
+ */
+export async function deleteImageFromCloudinary(url: string): Promise<void> {
+  if (!url || !url.includes("res.cloudinary.com")) return;
+  
+  try {
+    // URL format: https://res.cloudinary.com/<cloud_name>/image/upload/v<version>/<public_id>.<extension>
+    const parts = url.split("/upload/");
+    if (parts.length !== 2) return;
+    
+    // Remove the version tag (e.g. v12345678/) and the file extension (.jpg)
+    let publicIdWithExt = parts[1];
+    if (publicIdWithExt.match(/^v\d+\//)) {
+      publicIdWithExt = publicIdWithExt.replace(/^v\d+\//, '');
+    }
+    const publicId = publicIdWithExt.substring(0, publicIdWithExt.lastIndexOf('.')) || publicIdWithExt;
+
+    const res = await fetch("/api/delete-image", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ public_id: publicId })
+    });
+    
+    if (!res.ok) {
+      console.warn("Failed to delete Cloudinary image:", await res.text());
+    }
+  } catch (error) {
+    console.error("Error deleting image from Cloudinary:", error);
+  }
 }

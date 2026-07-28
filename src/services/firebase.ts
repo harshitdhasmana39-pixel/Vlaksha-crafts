@@ -233,5 +233,51 @@ export async function saveSettingsToFirestore(settings: StudioSettings): Promise
   }
 }
 
+import { Product } from '../types';
+import { deleteDoc } from 'firebase/firestore';
+
+export async function saveProductToFirestore(product: Product): Promise<void> {
+  const path = `products/${product.id}`;
+  try {
+    const productDocRef = doc(db, 'products', product.id);
+    await setDoc(productDocRef, product);
+    console.log(`Product ${product.id} successfully saved to Firestore!`);
+  } catch (error: any) {
+    console.error("Error saving product to Firestore:", error);
+    if (error?.code === 'permission-denied' || error?.message?.includes('permission')) {
+      handleFirestoreError(error, OperationType.WRITE, path);
+    }
+  }
+}
+
+export async function deleteProductFromFirestore(productId: string): Promise<void> {
+  const path = `products/${productId}`;
+  try {
+    const productDocRef = doc(db, 'products', productId);
+    await deleteDoc(productDocRef);
+    console.log(`Product ${productId} successfully deleted from Firestore!`);
+  } catch (error: any) {
+    console.error("Error deleting product from Firestore:", error);
+    if (error?.code === 'permission-denied' || error?.message?.includes('permission')) {
+      handleFirestoreError(error, OperationType.DELETE, path);
+    }
+  }
+}
+
+export async function getAllProductsFromFirestore(): Promise<Product[]> {
+  try {
+    const productsCol = collection(db, 'products');
+    const snapshot = await withTimeout(getDocs(productsCol), 3000);
+    const fetchedProducts: Product[] = [];
+    snapshot.forEach((doc) => {
+      fetchedProducts.push(doc.data() as Product);
+    });
+    return fetchedProducts;
+  } catch (error: any) {
+    console.warn("Could not fetch all products from Firestore (using local storage):", error?.message || error);
+    return [];
+  }
+}
+
 export { app, db, auth, storage, GoogleAuthProvider, signInWithPopup };
 
