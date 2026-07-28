@@ -116,11 +116,23 @@ export default function ThreeDViewer({ product, selectedColor, onSelectColor }: 
     }
   };
 
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const zoomDelta = e.deltaY * -0.001;
-    setZoom(prev => Math.max(0.8, Math.min(2.5, prev + zoomDelta)));
-  };
+  useEffect(() => {
+    const handleWheelNative = (e: WheelEvent) => {
+      e.preventDefault();
+      const zoomDelta = e.deltaY * -0.001;
+      setZoom(prev => Math.max(0.8, Math.min(2.5, prev + zoomDelta)));
+    };
+    
+    const element = containerRef.current;
+    if (element) {
+      element.addEventListener('wheel', handleWheelNative, { passive: false });
+    }
+    return () => {
+      if (element) {
+        element.removeEventListener('wheel', handleWheelNative);
+      }
+    };
+  }, []);
 
   const resetView = () => {
     setRotationX(12);
@@ -173,7 +185,6 @@ export default function ThreeDViewer({ product, selectedColor, onSelectColor }: 
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleMouseUpOrLeave}
-        onWheel={handleWheel}
         className={`w-full relative flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none transition-all ${
           isFullscreen ? 'h-[80vh]' : 'h-[380px] md:h-[460px]'
         }`}

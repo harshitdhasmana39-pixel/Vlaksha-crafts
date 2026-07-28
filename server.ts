@@ -9,9 +9,8 @@ import crypto from "crypto";
 
 dotenv.config();
 
-async function startServer() {
-  const app = express();
-  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const app = express();
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   // Support up to 10MB JSON payloads
   app.use(express.json({ limit: "10mb" }));
@@ -452,14 +451,16 @@ async function startServer() {
   });
 
   // Vite middleware setup for Development
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    // Serve static assets in Production
+  if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+    (async () => {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+    })();
+  } else if (!process.env.VERCEL) {
+    // Serve static assets in Production (Non-Vercel)
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
@@ -467,9 +468,10 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Express server running on port ${PORT}`);
-  });
-}
+  if (!process.env.VERCEL) {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Express server running on port ${PORT}`);
+    });
+  }
 
-startServer();
+export default app;

@@ -198,22 +198,9 @@ export async function uploadBase64ToStorage(base64Str: string, path: string): Pr
     return base64Str;
   }
   
-  try {
-    const { storage } = await import('../services/firebase');
-    const { ref, uploadString, getDownloadURL } = await import('firebase/storage');
-    
-    // Create a unique filename if path is a directory, or use the path directly
-    const isDirectory = path.endsWith('/');
-    const finalPath = isDirectory ? `${path}${Date.now()}-${Math.random().toString(36).substring(7)}` : path;
-    
-    const storageRef = ref(storage, finalPath);
-    await uploadString(storageRef, base64Str, 'data_url');
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
-  } catch (error) {
-    console.error(`Failed to upload image to Firebase Storage at ${path}:`, error);
-    // If upload fails, fallback to returning the base64 string (or handle differently)
-    // To ensure UI doesn't break, returning base64 allows it to save locally if Firestore fails
-    return base64Str;
-  }
+  // BYPASS FIREBASE STORAGE to avoid requiring a Credit Card / Blaze Plan upgrade.
+  // Instead, we compress the image so it's very small and save the base64 string directly 
+  // into the completely free Firestore Database (which has a 1MB limit per document).
+  console.log(`Bypassing Firebase Storage for ${path}. Returning compressed Base64 string directly.`);
+  return await compressBase64Image(base64Str, 800, 0.7, 500000);
 }
