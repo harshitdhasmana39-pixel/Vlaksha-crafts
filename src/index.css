@@ -10,17 +10,17 @@
 
 :root {
   --theme-primary: #C9A24B;     /* Artisan Warm Brass Gold */
-  --theme-accent: #22304F;      /* Gallery Deep Indigo */
-  --theme-terracotta: #C4703B;  /* Mud & Clay Terracotta Accent */
+  --theme-accent: #17223B;      /* Gallery Deep Indigo (Darker for better contrast) */
+  --theme-terracotta: #B95B30;  /* Mud & Clay Terracotta Accent */
   --theme-saffron: #D97706;     /* Sacred Saffron */
-  --theme-indigo: #22304F;      /* Rich Gallery Indigo */
-  --theme-emerald: #047857;     /* Peacock Emerald */
-  --theme-crimson: #991B1B;     /* Sacred Crimson */
-  --theme-gold: #C9A24B;        /* Warm Brass Gold */
-  --theme-bg: #FAF7F2;          /* Hand-cut Linen Cream Background */
-  --theme-bg-alt: #F2EBDC;      /* Soft Terracotta Sand Alt */
-  --theme-announcement-bg: #1B2438; /* Muted Navy Utility Bar */
-  --theme-announcement-text: #EAD8B1;
+  --theme-indigo: #17223B;      /* Rich Gallery Indigo */
+  --theme-emerald: #065F46;     /* Peacock Emerald */
+  --theme-crimson: #7F1D1D;     /* Sacred Crimson */
+  --theme-gold: #D4AF37;        /* Premium Gold */
+  --theme-bg: #FDFBF7;          /* Cleaner Light Background */
+  --theme-bg-alt: #F4EFE6;      /* Soft Terracotta Sand Alt */
+  --theme-announcement-bg: #111827; /* Muted Navy Utility Bar */
+  --theme-announcement-text: #F3E8D2;
 }
 
 body {
@@ -116,5 +116,39 @@ body {
 }
 
 .shadow-soft-gallery {
-  box-shadow: 0 10px 40px -10px rgba(34, 48, 79, 0.07);
+  box-shadow: 0 10px 40px -10px rgba(23, 34, 59, 0.09);
+}
+
+/* Fluid Typography Utilities */
+.text-fluid-h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.1;
+}
+
+.text-fluid-h2 {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  line-height: 1.2;
+}
+
+.text-fluid-h3 {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  line-height: 1.3;
+}
+
+/* Mobile optimizations */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Touch targets */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

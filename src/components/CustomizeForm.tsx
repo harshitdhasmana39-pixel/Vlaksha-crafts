@@ -131,7 +131,7 @@ export default function CustomizeForm({ onCustomize, leadTimeDays }: CustomizeFo
               ? 'e.g. वसुधैव कुटुम्बकम्'
               : 'e.g. Welcome to Kandpals'
           }
-          className="w-full text-xs py-2.5 px-3 rounded-none border border-[var(--theme-primary)]/20 focus:outline-hidden focus:border-[var(--theme-accent)] bg-white font-sans"
+          className="w-full text-base py-3 px-4 rounded-none border border-[var(--theme-primary)]/20 focus:outline-hidden focus:border-[var(--theme-accent)] bg-white font-sans"
         />
         <p className="text-[10px] text-stone-400 mt-1 italic font-sans leading-normal">
           * Please verify spellings. Devanagari script letters will be rendered using authentic calligraphy.
@@ -189,7 +189,7 @@ export default function CustomizeForm({ onCustomize, leadTimeDays }: CustomizeFo
       <div className="flex items-center gap-3">
         <button
           type="submit"
-          className={`flex-1 py-3 px-4 rounded-none font-sans text-xs font-semibold tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 ${
+          className={`touch-target flex-1 py-3.5 px-4 rounded-none font-sans text-sm font-semibold tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 ${
             isSaved
               ? 'bg-emerald-700 text-white hover:bg-emerald-800'
               : 'bg-[var(--theme-accent)] text-white hover:bg-[var(--theme-primary)] shadow-xs'

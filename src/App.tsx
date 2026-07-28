@@ -1267,7 +1267,7 @@ export default function App() {
       />
 
       {/* Main Container Stage */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-6 md:py-10 w-full">
         
         {/* VIEW: HOME PAGE */}
         {currentView === 'home' && (
@@ -1278,13 +1278,13 @@ export default function App() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="bg-[#22304F] text-white rounded-2xl overflow-hidden shadow-soft-gallery relative grid grid-cols-1 lg:grid-cols-12 border border-[#C9A24B]/20"
+              className="bg-[#17223B] text-white rounded-3xl overflow-hidden shadow-soft-gallery relative grid grid-cols-1 lg:grid-cols-12 border border-[#C9A24B]/20"
             >
               {/* Background ambient lighting watermarks */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(196,112,59,0.15)_0%,transparent_55%)] pointer-events-none" />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(201,162,75,0.12)_0%,transparent_50%)] pointer-events-none" />
               
-              <div className="lg:col-span-7 p-8 sm:p-12 lg:p-16 flex flex-col justify-center space-y-6 relative z-10">
+              <div className="lg:col-span-7 p-6 sm:p-12 lg:p-16 flex flex-col justify-center space-y-6 sm:space-y-8 relative z-10">
                 <motion.span 
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -1299,7 +1299,7 @@ export default function App() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.5 }}
-                  className="font-serif text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight leading-tight text-white"
+                  className="font-serif text-fluid-h1 font-light tracking-tight text-white"
                   dangerouslySetInnerHTML={{ __html: settings.heroTitle || 'Intricate <span className="text-[#C9A24B] italic font-normal">Lippan Mud-Mirror</span> reliefs & sacred mandalas' }}
                 />
                 
@@ -1326,7 +1326,7 @@ export default function App() {
                       setActiveCategoryFilter('all');
                       handleNavigate('shop');
                     }}
-                    className="py-3 px-7 bg-[#C9A24B] hover:bg-[#FAF7F2] hover:text-[#22304F] text-white font-sans text-[11px] uppercase tracking-widest font-semibold transition-all shadow-md rounded-full cursor-pointer"
+                    className="touch-target py-3.5 px-8 bg-[#C9A24B] hover:bg-[#FDFBF7] hover:text-[#17223B] text-white font-sans text-[11px] uppercase tracking-widest font-bold transition-all shadow-md rounded-full cursor-pointer w-full sm:w-auto"
                   >
                     {settings.heroButtonText || "Explore Handcrafted Catalog"}
                   </motion.button>
@@ -1335,7 +1335,7 @@ export default function App() {
                     whileTap={{ scale: 0.98 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
                     onClick={() => handleNavigate('about')}
-                    className="py-3 px-7 border border-white/30 hover:border-[#C9A24B] hover:text-[#C9A24B] text-white font-sans text-[11px] uppercase tracking-widest font-medium transition-all rounded-full cursor-pointer"
+                    className="touch-target py-3.5 px-8 border border-white/30 hover:border-[#C9A24B] hover:text-[#C9A24B] text-white font-sans text-[11px] uppercase tracking-widest font-medium transition-all rounded-full cursor-pointer w-full sm:w-auto"
                   >
                     Meet the Artist
                   </motion.button>
@@ -1352,7 +1352,7 @@ export default function App() {
               </div>
 
               {/* Decorative signature-piece side container */}
-              <div className="lg:col-span-5 bg-[#FAF7F2] border-t lg:border-t-0 lg:border-l border-[#C9A24B]/20 p-8 flex items-center justify-center relative">
+              <div className="lg:col-span-5 bg-[#FDFBF7] border-t lg:border-t-0 lg:border-l border-[#C9A24B]/20 p-8 sm:p-12 flex items-center justify-center relative">
                 
                 {/* Ambient aura ring */}
                 <div className="absolute w-72 h-72 rounded-full bg-[radial-gradient(circle,rgba(201,162,75,0.15)_0%,transparent_70%)] pointer-events-none" />
@@ -1407,7 +1407,7 @@ export default function App() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-5">
                 {(settings.categories || []).map((cat, idx) => (
                   <CategoryTile
                     key={cat.id}
@@ -1445,7 +1445,7 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {products.filter(p => p.featured).slice(0, 3).map((p) => (
                   <ProductCard
                     key={p.id}
@@ -1461,7 +1461,7 @@ export default function App() {
             <MandalaDivider />
 
             {/* Meet Laksha Kandpal Story Strip in Editorial style */}
-            <div className="bg-white/40 border border-[var(--theme-primary)]/20 rounded-xs p-6 sm:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center shadow-xs">
+            <div className="bg-white/60 border border-[var(--theme-primary)]/20 rounded-2xl p-6 sm:p-12 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center shadow-soft-gallery">
               <div className="lg:col-span-5 flex justify-center relative">
                 <div className="relative aspect-square w-full max-w-[280px] bg-[#f8f5ef] rounded-full overflow-hidden p-2 border border-[var(--theme-primary)]/30">
                   <LakshaPortrait variant="circle" className="w-full h-full rounded-full" />

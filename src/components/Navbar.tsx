@@ -110,10 +110,10 @@ export default function Navbar({
           <div className="flex items-center md:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-full text-stone-700 hover:bg-[#F2EBDC] hover:text-[#22304F] transition-colors focus:outline-none"
+              className="touch-target p-2 rounded-full text-stone-700 hover:bg-[#F2EBDC] hover:text-[#22304F] transition-colors focus:outline-none"
               aria-label="Toggle mobile menu"
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
 
@@ -327,45 +327,50 @@ export default function Navbar({
         {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: '100vh' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden border-t border-[#C9A24B]/15 bg-[#FAF7F2] py-4 px-6 space-y-3 shadow-inner"
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="md:hidden absolute top-full left-0 right-0 bg-[#FDFBF7] shadow-xl overflow-hidden flex flex-col z-50 border-t border-[#C9A24B]/20"
           >
-            {navItems.map((item, idx) => (
-              <motion.button
-                key={item.view}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                onClick={() => {
-                  onNavigate(item.view);
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`block w-full text-left py-2 text-xs font-sans uppercase tracking-[0.2em] transition-colors ${
-                  currentView === item.view
-                    ? 'text-[#22304F] font-bold border-l-2 border-[#C9A24B] pl-3'
-                    : 'text-stone-600 hover:text-[#22304F] pl-3'
-                }`}
-              >
-                {item.label}
-              </motion.button>
-            ))}
-            {isAdmin && (
-              <motion.button
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: navItems.length * 0.05 }}
-                onClick={() => {
-                  onNavigate('admin');
-                  setIsMobileMenuOpen(false);
-                }}
-                className="block w-full text-left py-2 text-xs font-sans uppercase tracking-[0.2em] text-[#C4703B] font-semibold pl-3 flex items-center gap-2"
-              >
-                <ShieldCheck className="w-4 h-4" />
-                <span>Artist Admin Panel</span>
-              </motion.button>
-            )}
+            <div className="flex flex-col h-full px-8 py-10 space-y-6">
+              {navItems.map((item, idx) => (
+                <motion.button
+                  key={item.view}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 + 0.1, duration: 0.4 }}
+                  onClick={() => {
+                    onNavigate(item.view);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`block w-full text-left py-4 text-lg font-sans uppercase tracking-[0.15em] transition-colors ${
+                    currentView === item.view
+                      ? 'text-[#17223B] font-bold border-l-4 border-[#C9A24B] pl-4'
+                      : 'text-stone-500 hover:text-[#17223B] pl-4'
+                  }`}
+                >
+                  {item.label}
+                </motion.button>
+              ))}
+              
+              <div className="flex-1" />
+
+              {isAdmin && (
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: navItems.length * 0.1 + 0.2 }}
+                  onClick={() => {
+                    onNavigate('admin');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="block w-full text-left py-4 text-sm font-sans uppercase tracking-[0.2em] text-[#B95B30] font-semibold flex items-center gap-3 border-t border-stone-200 pt-6"
+                >
+                  <ShieldCheck className="w-5 h-5" />
+                  <span>Artist Admin Panel</span>
+                </motion.button>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

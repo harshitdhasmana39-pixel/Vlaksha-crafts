@@ -21,9 +21,9 @@ export default function Footer({ onNavigate }: FooterProps) {
   };
 
   return (
-    <footer id="vlaksha-footer" className="bg-[#181D28] text-stone-300 relative overflow-hidden pt-16 pb-8 border-t border-[#C9A24B]/15">
+    <footer id="vlaksha-footer" className="bg-[#181D28] text-stone-300 relative overflow-hidden pt-16 pb-24 lg:pb-8 border-t border-[#C9A24B]/15">
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 space-y-16">
         
         {/* ROW 1: Brand Intro + Newsletter (2-Column Layout) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pb-12 border-b border-white/10">
@@ -70,7 +70,7 @@ export default function Footer({ onNavigate }: FooterProps) {
         </div>
 
         {/* ROW 2: Link Columns (3 Slim Columns) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pb-12 border-b border-white/10 font-sans text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-12 sm:gap-x-8 pb-12 border-b border-white/10 font-sans text-xs">
           
           {/* Column 1: Explore */}
           <div className="space-y-3">
@@ -150,8 +150,8 @@ export default function Footer({ onNavigate }: FooterProps) {
 
         </div>
 
-        {/* ROW 3: Unified Trust Strip (6 Signals in Single Row) */}
-        <div className="pb-10 border-b border-white/10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 text-xs text-stone-400 font-sans">
+        {/* ROW 3: Unified Trust Strip (6 Signals in Single Row on Desktop, 2x3 Grid on Mobile) */}
+        <div className="pb-10 border-b border-white/10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-8 gap-x-4 text-xs text-stone-400 font-sans">
           
           <div className="flex items-center gap-2.5">
             <Palette className="w-4 h-4 text-[#C9A24B] shrink-0 stroke-[1.5]" />

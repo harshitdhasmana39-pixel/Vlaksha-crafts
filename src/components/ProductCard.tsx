@@ -149,7 +149,7 @@ export default function ProductCard({
             onClick={handleHeartClick}
             animate={isHeartAnimating ? { scale: [1, 1.4, 0.9, 1.1, 1] } : { scale: 1 }}
             transition={{ duration: 0.45 }}
-            className={`absolute top-4 right-4 z-20 p-2.5 rounded-full backdrop-blur-md transition-all shadow-xs ${
+            className={`touch-target absolute top-4 right-4 z-20 p-2.5 rounded-full backdrop-blur-md transition-all shadow-xs ${
               isWishlisted
                 ? 'bg-white text-red-500'
                 : 'bg-white/80 text-stone-400 hover:text-red-500 hover:bg-white'
@@ -229,9 +229,9 @@ export default function ProductCard({
                 e.stopPropagation();
                 onViewDetails(product.id);
               }}
-              className="text-[9.5px] uppercase tracking-widest font-sans bg-[#22304F] hover:bg-[#C9A24B] text-white font-medium py-2 px-4 rounded-full transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+              className="touch-target text-[9.5px] uppercase tracking-widest font-sans bg-[#22304F] hover:bg-[#C9A24B] text-white font-medium py-2 px-5 rounded-full transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
-              <Eye className="w-3.5 h-3.5 stroke-[1.5]" />
+              <Eye className="w-4 h-4 stroke-[1.5]" />
               <span>3D View</span>
             </button>
           </div>
