@@ -209,18 +209,18 @@ export async function uploadBase64ToStorage(base64Str: string, path: string): Pr
       throw new Error(`Image is too large (${(blob.size / 1024 / 1024).toFixed(1)}MB). Maximum allowed size is 4.5MB.`);
     }
 
-    // 3. Prepare FormData
-    const formData = new FormData();
-    // Default filename based on extension or path
-    const extension = blob.type.split('/')[1] || 'jpeg';
-    formData.append("image", blob, `upload_${Date.now()}.${extension}`);
-    formData.append("folder", path.replace(/\/$/, "")); // Remove trailing slash
-
-    // 4. Send to Backend Cloudinary Service
+    // 3. Prepare JSON Payload
+    // Send to Backend Cloudinary Service
     console.log(`Uploading to Cloudinary via backend... folder: ${path}`);
     const apiRes = await fetch("/api/upload", {
       method: "POST",
-      body: formData,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        image: base64Str,
+        folder: path.replace(/\/$/, "")
+      }),
     });
 
     if (!apiRes.ok) {

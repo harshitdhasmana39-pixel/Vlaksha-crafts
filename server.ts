@@ -8,7 +8,6 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import multer from "multer";
 import { v2 as cloudinary } from 'cloudinary';
-import streamifier from 'streamifier';
 
 dotenv.config();
 
@@ -16,34 +15,20 @@ if (!process.env.CLOUDINARY_URL) {
   console.warn("⚠️ CLOUDINARY_URL environment variable is missing.");
 }
 
-export const uploadImage = (buffer: Buffer, folder: string, publicId?: string): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    const uploadOptions: any = {
-      folder,
-      fetch_format: 'auto',
-      quality: 'auto',
-      resource_type: 'image',
-    };
-    
-    if (publicId) {
-      uploadOptions.public_id = publicId;
-      uploadOptions.invalidate = true;
-    }
+export const uploadImage = async (base64Str: string, folder: string, publicId?: string): Promise<any> => {
+  const uploadOptions: any = {
+    folder,
+    fetch_format: 'auto',
+    quality: 'auto',
+    resource_type: 'image',
+  };
+  
+  if (publicId) {
+    uploadOptions.public_id = publicId;
+    uploadOptions.invalidate = true;
+  }
 
-    const stream = cloudinary.uploader.upload_stream(
-      uploadOptions,
-      (error, result) => {
-        if (error) {
-          console.error(`[Cloudinary Upload Error] folder: ${folder}`, error);
-          reject(error);
-        } else {
-          resolve(result);
-        }
-      }
-    );
-
-    streamifier.createReadStream(buffer).pipe(stream);
-  });
+  return await cloudinary.uploader.upload(base64Str, uploadOptions);
 };
 
 export const deleteImage = async (publicId: string): Promise<any> => {
@@ -497,23 +482,19 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
     }
   });
 
-  // Cloudinary Multer Setup
-  const upload = multer({ 
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 4.5 * 1024 * 1024 } // 4.5MB limit (Vercel serverless limit)
-  });
+  app.use(express.json({ limit: '10mb' }));
 
   // Upload Image to Cloudinary
-  app.post("/api/upload", upload.single("image"), async (req, res) => {
+  app.post("/api/upload", async (req, res) => {
     try {
-      if (!req.file) {
-        res.status(400).json({ error: "No image file provided" });
+      const { image, folder = "misc", publicId } = req.body;
+      
+      if (!image) {
+        res.status(400).json({ error: "No image provided" });
         return;
       }
-      const folder = req.body.folder || "misc";
-      const publicId = req.body.publicId;
 
-      const result = await uploadImage(req.file.buffer, folder, publicId);
+      const result = await uploadImage(image, folder, publicId);
       res.json({
         secure_url: result.secure_url,
         public_id: result.public_id,
