@@ -198,34 +198,9 @@ export async function uploadBase64ToStorage(base64Str: string, path: string): Pr
     return base64Str;
   }
   
-  try {
-    const { storage } = await import('../services/firebase');
-    const { ref, uploadString, getDownloadURL } = await import('firebase/storage');
-    
-    // Stop the silent infinite retry loop: fast-fail if the bucket is missing or CORS blocks it
-    storage.maxUploadRetryTime = 3000; // 3 seconds
-    storage.maxOperationRetryTime = 3000;
-    
-    // Create a unique filename if path is a directory, or use the path directly
-    const isDirectory = path.endsWith('/');
-    const finalPath = isDirectory ? `${path}${Date.now()}-${Math.random().toString(36).substring(7)}` : path;
-    
-    const storageRef = ref(storage, finalPath);
-    await uploadString(storageRef, base64Str, 'data_url');
-    return await getDownloadURL(storageRef);
-  } catch (error: any) {
-    console.error(`Firebase Storage Upload Failed [${path}]:`, error);
-    
-    // Throw an explicit error to halt the operation and show in UI
-    const errMessage = error?.message?.toLowerCase() || "";
-    if (errMessage.includes("bucket") || errMessage.includes("404")) {
-      throw new Error("Storage Bucket not found. Please upgrade to the Blaze plan and initialize Storage in the Firebase Console.");
-    } else if (errMessage.includes("unauthorized") || errMessage.includes("permission-denied")) {
-      throw new Error("Permission Denied: You must be an admin to upload images.");
-    } else if (errMessage.includes("network") || errMessage.includes("cors")) {
-      throw new Error("Network/CORS Error: Ensure your frontend domain is whitelisted in Firebase Storage CORS config.");
-    } else {
-      throw new Error(`Failed to upload image: ${error?.message || "Unknown error"}`);
-    }
-  }
+  // BYPASS FIREBASE STORAGE to avoid requiring a Credit Card / Blaze Plan upgrade.
+  // Instead, we compress the image so it's very small and save the base64 string directly 
+  // into the completely free Firestore Database (which has a 1MB limit per document).
+  console.log(`Bypassing Firebase Storage for ${path}. Returning compressed Base64 string directly.`);
+  return await compressBase64Image(base64Str, 800, 0.7, 500000);
 }
