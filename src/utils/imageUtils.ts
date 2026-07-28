@@ -199,17 +199,11 @@ export async function uploadBase64ToStorage(base64Str: string, path: string): Pr
   }
   
   try {
-    // 1. Convert Base64 to Blob
-    const response = await fetch(base64Str);
-    const blob = await response.blob();
+    // 1. Compress the image in the browser to reduce size (bypasses Vercel 4.5MB limit and timeouts)
+    console.log("Compressing image to bypass Vercel limits...");
+    const compressedBase64Str = await compressBase64Image(base64Str, 1000, 0.75);
 
-    // 2. Enforce 4.5 MB Limit (Vercel serverless limit)
-    const MAX_SIZE = 4.5 * 1024 * 1024;
-    if (blob.size > MAX_SIZE) {
-      throw new Error(`Image is too large (${(blob.size / 1024 / 1024).toFixed(1)}MB). Maximum allowed size is 4.5MB.`);
-    }
-
-    // 3. Prepare JSON Payload
+    // 2. Prepare JSON Payload
     // Send to Backend Cloudinary Service
     console.log(`Uploading to Cloudinary via backend... folder: ${path}`);
     const apiRes = await fetch("/api/upload", {
@@ -218,7 +212,7 @@ export async function uploadBase64ToStorage(base64Str: string, path: string): Pr
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        image: base64Str,
+        image: compressedBase64Str,
         folder: path.replace(/\/$/, "")
       }),
     });
