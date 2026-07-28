@@ -115,5 +115,11 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isValidId(docId);
     }
+
+    // Products Collection
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isValidId(productId);
+    }
   }
 }
