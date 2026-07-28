@@ -401,8 +401,9 @@ export default function AdminPanel({ onProductUpdated, onSettingsUpdated }: Admi
       setTimeout(() => {
         setSettingsSuccessMessage('');
       }, 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error saving settings:", err);
+      alert(`Upload Failed:\n\n${err?.message || "Unknown error occurred"}`);
     } finally {
       setIsSavingSettings(false);
     }
