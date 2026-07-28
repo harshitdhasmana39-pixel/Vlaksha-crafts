@@ -575,4 +575,9 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
     });
   }
 
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error("Unhandled Server Error:", err);
+    res.status(500).json({ error: err.message || "An unexpected server error occurred." });
+  });
+
 export default app;
