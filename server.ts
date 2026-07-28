@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
@@ -541,11 +540,16 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
   // Vite middleware setup for Development
   if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
     (async () => {
-      const vite = await createViteServer({
-        server: { middlewareMode: true },
-        appType: "spa",
-      });
-      app.use(vite.middlewares);
+      try {
+        const { createServer: createViteServer } = await import("vite");
+        const vite = await createViteServer({
+          server: { middlewareMode: true },
+          appType: "spa",
+        });
+        app.use(vite.middlewares);
+      } catch (err) {
+        console.error("Failed to start Vite middleware:", err);
+      }
     })();
   } else if (!process.env.VERCEL) {
     // Serve static assets in Production (Non-Vercel)
